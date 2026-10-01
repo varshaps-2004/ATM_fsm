@@ -1,6 +1,7 @@
 # ATM_fsm
 implementation of ATM using verilog
 //rtl.v
+
 module atm_fsm (
     input clk,
     input reset,
@@ -87,6 +88,84 @@ module atm_fsm (
             end
 
         endcase
+    end
+
+endmodule
+
+
+//testbench.v
+
+
+module tb;
+
+    reg clk;
+    reg reset;
+    reg start;
+    reg pin_ok;
+    reg menu_valid;
+    reg [1:0] menu_select;
+    reg process_done;
+
+    wire [2:0] state;
+
+    atm_fsm dut (
+        .clk(clk),
+        .reset(reset),
+        .start(start),
+        .pin_ok(pin_ok),
+        .menu_valid(menu_valid),
+        .menu_select(menu_select),
+        .process_done(process_done),
+        .state(state)
+    );
+
+    // Clock generation
+    always #5 clk = ~clk;
+
+    initial begin
+
+        // Initial values
+        clk = 0;
+        reset = 1;
+        start = 0;
+        pin_ok = 0;
+        menu_valid = 0;
+        menu_select = 2'b00;
+        process_done = 0;
+
+        // Reset
+        #10 reset = 0;
+
+        //====================================
+        // CONDITION 1: WITHDRAW
+        //====================================
+
+        #15 start = 1;
+        #10 pin_ok = 1;
+        #10 menu_valid = 1;
+            menu_select = 2'b00;
+        #10 process_done = 1;
+        #10 process_done = 0;
+
+        // Return inputs to default
+        start = 0;
+        pin_ok = 0;
+        menu_valid = 0;
+
+        //====================================
+        // CONDITION 2: DEPOSIT
+        //====================================
+
+        #20 start = 1;
+        #10 pin_ok = 1;
+        #10 menu_valid = 1;
+            menu_select = 2'b01;
+        #10 process_done = 1;
+        #10 process_done = 0;
+
+        // Finish simulation
+        #20 $finish;
+
     end
 
 endmodule
